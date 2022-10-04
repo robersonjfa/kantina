@@ -1,5 +1,7 @@
+import 'package:kantina/helpers/user_helper.dart';
 import 'package:kantina/pages/principal_page.dart';
 import 'package:flutter/material.dart';
+import 'package:kantina/pages/register_page.dart';
 
 class LoginPage extends StatelessWidget {
   @override
@@ -16,20 +18,24 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   TextStyle style = const TextStyle(fontSize: 20); // estilo geral
   // a ideia hoje é usar o conceito de formulário do flutter - widget form
-  String? _usuario = "";
-  String? _senha = "";
+  String? _email = "";
+  String? _password = "";
+  var userHelper = UserHelper();
 
   final frmLoginKey =
       new GlobalKey<FormState>(); // serve como identificador do formulário
+
   void _validarLogin() async {
+    await userHelper.open();
     // capturando o estado atual do formulário
     final form = frmLoginKey.currentState;
 
     if (form!.validate()) {
+      var u = await userHelper.validateLogin(_email!, _password!);
       form.save();
 
       // validando usuário e senha
-      if (_usuario != null) {
+      if (_email != null) {
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (context) => PrincipalPage()));
       } else {
@@ -46,15 +52,19 @@ class _LoginState extends State<Login> {
     }
   }
 
+  openRegister() {
+    showDialog(context: context, builder: (context) => RegisterPage());
+  }
+
   @override
   Widget build(BuildContext context) {
     // campo usuario
-    final usuarioField = TextFormField(
+    final emailField = TextFormField(
       style: style,
-      onSaved: (valor) => _usuario = valor,
-      validator: (valor) {
-        return valor!.length < 15
-            ? "Usuário deve ter no mínimo 15 caracteres!"
+      onSaved: (value) => _email = value,
+      validator: (value) {
+        return value!.length < 15
+            ? "E-mail deve ter no mínimo 20 caracteres!"
             : null;
       },
       decoration: InputDecoration(
@@ -67,12 +77,12 @@ class _LoginState extends State<Login> {
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(32))),
     );
 
-    final senhaField = TextFormField(
+    final passwordField = TextFormField(
       obscureText: true,
       style: style,
-      onSaved: (valor) => _senha = valor,
-      validator: (valor) {
-        return valor!.length < 6 ? "Senha inválida!" : null;
+      onSaved: (value) => _password = value,
+      validator: (value) {
+        return value!.length < 6 ? "Senha inválida!" : null;
       },
       decoration: InputDecoration(
           contentPadding: const EdgeInsets.fromLTRB(20, 15, 20, 15),
@@ -105,11 +115,11 @@ class _LoginState extends State<Login> {
                                 const SizedBox(
                                   height: 45,
                                 ),
-                                usuarioField,
+                                emailField,
                                 const SizedBox(
                                   height: 25,
                                 ),
-                                senhaField,
+                                passwordField,
                                 const SizedBox(
                                   height: 35,
                                 ),
@@ -121,10 +131,7 @@ class _LoginState extends State<Login> {
                                   height: 15,
                                 ),
                                 TextButton(
-                                    onPressed: () => showDialog(
-                                        context: context,
-                                        builder: (context) =>
-                                            const Text("teste")),
+                                    onPressed: openRegister,
                                     child: const Text("Registrar",
                                         style: TextStyle(
                                             fontSize: 25,

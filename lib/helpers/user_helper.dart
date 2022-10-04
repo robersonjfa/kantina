@@ -8,7 +8,7 @@ import 'package:sqflite/sqflite.dart';
 // criando o nosso helper
 // camada de persistência
 class UserHelper {
-  final String databaseName = "meuleitor.db"; // nome da base
+  final String databaseName = "kantina.db"; // nome da base
   final int databaseVersion = 1; // versão da base
   late Database db; // variável que representa o banco
 
@@ -23,7 +23,7 @@ class UserHelper {
 
   void _onCreate(Database db, int version) async {
     await db.execute(
-        "CREATE TABLE user(id INTEGER PRIMARY KEY autoincrement, name TEXT, email TEXT, password TEXT)");
+        "CREATE TABLE user(id INTEGER PRIMARY KEY autoincrement, name TEXT, email TEXT, password TEXT, latitude NUMERIC, longitude NUMERIC, photo TEXT)");
     await db.execute(
         "insert into user(name, email, password) values('flutter', 'flutter@unoesc.edu.br', 'flutter')");
   }
@@ -44,7 +44,9 @@ class UserHelper {
 
   Future<bool> deleteUser(User u) async {
     var dbClient = await db;
-    int res = await dbClient.rawDelete("delete from user where id = ?", [u.id]);
+    int res = await dbClient.
+    // $1, :email
+    rawDelete("delete from user where id = ?", [u.id]);
     return res > 0 ? true : false;
   }
 
@@ -56,8 +58,13 @@ class UserHelper {
         "select * from user where email = ? and password = ?",
         [email, password]);
     if (list.length > 0) {
-      user = User(list[0]["id"], list[0]["name"], list[0]["email"],
-          list[0]["password"]);
+      user = User(list[0]["id"], 
+                  list[0]["name"], 
+                  list[0]["email"],
+                  list[0]["password"],
+                  list[0]["latitude"],
+                  list[0]["longitude"],
+                  list[0]["photo"]);
     }
 
     return user;

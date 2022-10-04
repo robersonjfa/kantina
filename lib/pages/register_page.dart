@@ -2,7 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:kantina/models/user.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -14,6 +15,11 @@ class _RegisterPageState extends State<RegisterPage> {
   String _name = "";
   String _email = "";
   String _password = "";
+  double _latitude = -1.0;
+  double _longitude = -1.0;
+  File? _image;
+
+  final ImagePicker _picker = ImagePicker();
 
   final frmRegisterKey =
       new GlobalKey<FormState>(); // serve como identificador do formulário
@@ -23,17 +29,30 @@ class _RegisterPageState extends State<RegisterPage> {
     Navigator.pop(context, true); // fechar a janela de registro
   }
 
+  void _openMaps() async {
+    LatLng location = await Navigator.pushNamed(context, '/map');
+    print(location);
+  }
+
   // método para registrar o usuário
   void _registerUser() async {
     // capturando o estado atual do formulário
     final form = frmRegisterKey.currentState;
-  
+
+    var bytes = null;
+    var photo = null;
+    if (_image != null) {
+      bytes = await _image!.readAsBytes();
+      photo = base64.encode(bytes);
+    }
+
     // valido o formulário
     if (form!.validate()) {
       form.save();
-      var user = User(0, _name, _email, _password);
-    
-      if (user.id != null && user.id > 0) {
+      var user =
+          User(0, _name, _email, _password, _latitude, _longitude, photo);
+
+      if (user.id > 0) {
         showDialog(
             context: context,
             builder: (context) {
@@ -49,6 +68,32 @@ class _RegisterPageState extends State<RegisterPage> {
                   title: Text('Erro'),
                   content: Text('Erro ao registrar usuário!'));
             });
+      }
+    }
+  }
+
+  void _pickImage() async {
+    final imageSource = await showDialog<ImageSource>(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: Text("Origem da Foto"),
+              actions: <Widget>[
+                MaterialButton(
+                  child: Text("Câmera"),
+                  onPressed: () => Navigator.pop(context, ImageSource.camera),
+                ),
+                MaterialButton(
+                  child: Text("Galeria"),
+                  onPressed: () => Navigator.pop(context, ImageSource.gallery),
+                )
+              ],
+            ));
+
+    if (imageSource != null) {
+      final file = await _picker.getImage(
+          source: imageSource, maxHeight: 400, maxWidth: 300);
+      if (file != null) {
+        setState(() => _image = File(file.path));
       }
     }
   }
@@ -83,6 +128,26 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                         ),
                       ),
+                      IconButton(
+                        icon: Icon(Icons.photo),
+                        color: Color(0xFF4B9DFE),
+                        padding: EdgeInsets.only(
+                            left: 38, right: 38, top: 15, bottom: 15),
+                        onPressed: _pickImage,
+                      ),
+                      SizedBox(
+                        height: 15,
+                      ),
+                      _image == null
+                          ? Text('Sem Foto!')
+                          : Image.file(
+                              _image!,
+                              height: 30,
+                              width: 30,
+                            ),
+                      SizedBox(
+                        height: 15,
+                      ),
                       SizedBox(
                         height: 15,
                       ),
@@ -112,11 +177,29 @@ class _RegisterPageState extends State<RegisterPage> {
                         height: 20,
                       ),
                       Text(
-                        "A senha deve conter no mínimo 6 caracteres!",
+                        "Senha deve ter no mínimo 6 caracteres!",
                         style: TextStyle(color: Colors.grey),
                       ),
                       SizedBox(
                         height: 5,
+                      ),
+                      TextFormField(
+                        readOnly: true,
+                        onSaved: (val) =>
+                            _latitude = double.parse(val.toString()),
+                        decoration: InputDecoration(labelText: "Latitude"),
+                      ),
+                      SizedBox(
+                        height: 20,
+                      ),
+                      TextFormField(
+                        readOnly: true,
+                        onSaved: (val) =>
+                            _longitude = double.parse(val.toString()),
+                        decoration: InputDecoration(labelText: "Longitude"),
+                      ),
+                      SizedBox(
+                        height: 20,
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -131,6 +214,10 @@ class _RegisterPageState extends State<RegisterPage> {
                           TextButton(
                             child: Text("Fechar"),
                             onPressed: _closeRegister,
+                          ),
+                          TextButton(
+                            child: Text("Mapa"),
+                            onPressed: _openMaps,
                           )
                         ],
                       ),
