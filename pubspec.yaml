@@ -44,7 +44,6 @@ dependencies:
   flutter_vector_icons:
   url_launcher:
   # tela de preferências - plugin
-  shared_preferences_settings:
   image_picker:
   google_maps_flutter:
   

@@ -30,8 +30,7 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   void _openMaps() async {
-    LatLng location = await Navigator.pushNamed(context, '/map');
-    print(location);
+    var location = await Navigator.pushNamed(context, '/map');
   }
 
   // método para registrar o usuário
