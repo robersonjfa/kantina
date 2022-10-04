@@ -42,7 +42,6 @@ dependencies:
   barcode_scan2:
   # ícones vetoriais
   flutter_vector_icons:
-  url_launcher:
   # tela de preferências - plugin
   image_picker:
   google_maps_flutter:
