@@ -35,9 +35,9 @@ class _LoginState extends State<Login> {
       form.save();
 
       // validando usuário e senha
-      if (_email != null) {
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => PrincipalPage()));
+      if (u != null) {
+        Navigator.pushReplacementNamed(
+            context, '/principal');
       } else {
         showDialog(
             context: context,

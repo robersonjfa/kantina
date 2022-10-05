@@ -37,7 +37,8 @@ class _MapPageState extends State<MapPage> {
   }
 
   void _closeMap() {
-    Navigator.pop(context, _currentLocation);
+    Navigator.pop(context, 
+    "${_currentLocation.latitude}, ${_currentLocation.longitude}");
   }
 
   void _onMapCreated(GoogleMapController controller) {

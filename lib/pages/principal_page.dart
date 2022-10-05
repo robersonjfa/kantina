@@ -11,6 +11,6 @@ class PrincipalPage extends StatefulWidget {
 class _PrincipalPageState extends State<PrincipalPage> {
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return Scaffold();
   }
 }

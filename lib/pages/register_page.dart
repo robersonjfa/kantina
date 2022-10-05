@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:kantina/helpers/user_helper.dart';
 import 'package:kantina/models/user.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -18,6 +19,9 @@ class _RegisterPageState extends State<RegisterPage> {
   double _latitude = -1.0;
   double _longitude = -1.0;
   File? _image;
+  var userHelper = UserHelper();
+  var _latController = TextEditingController();
+  var _lngController = TextEditingController();
 
   final ImagePicker _picker = ImagePicker();
 
@@ -30,13 +34,19 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   void _openMaps() async {
-    var location = await Navigator.pushNamed(context, '/map');
+    var location = 
+    await Navigator.pushNamed(context, '/map');
+    var latlng = location.toString().split(",");
+    _latController.text = latlng[0];
+    _lngController.text = latlng[1];
   }
 
   // método para registrar o usuário
   void _registerUser() async {
     // capturando o estado atual do formulário
     final form = frmRegisterKey.currentState;
+    var userHelper = UserHelper();    
+    await userHelper.open(); // é assincrono então precisa do await
 
     var bytes = null;
     var photo = null;
@@ -48,9 +58,12 @@ class _RegisterPageState extends State<RegisterPage> {
     // valido o formulário
     if (form!.validate()) {
       form.save();
+      
       var user =
           User(0, _name, _email, _password, _latitude, _longitude, photo);
-
+      // o id e retornado do banco de dados
+      user.id = await userHelper
+          .saveUser(user); // aqui salva no banco de dados - precisa do await
       if (user.id > 0) {
         showDialog(
             context: context,
@@ -187,6 +200,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         onSaved: (val) =>
                             _latitude = double.parse(val.toString()),
                         decoration: InputDecoration(labelText: "Latitude"),
+                        controller: _latController,
                       ),
                       SizedBox(
                         height: 20,
@@ -196,6 +210,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         onSaved: (val) =>
                             _longitude = double.parse(val.toString()),
                         decoration: InputDecoration(labelText: "Longitude"),
+                        controller: _lngController,
                       ),
                       SizedBox(
                         height: 20,

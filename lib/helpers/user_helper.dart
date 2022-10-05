@@ -51,9 +51,9 @@ class UserHelper {
   }
 
   // validar login
-  Future<User> validateLogin(String email, String password) async {
+  Future<User?> validateLogin(String email, String password) async {
     var dbClient = await db;
-    late User user; // preenche os dados do usuário
+    User? user; // preenche os dados do usuário
     List<Map> list = await dbClient.rawQuery(
         "select * from user where email = ? and password = ?",
         [email, password]);
