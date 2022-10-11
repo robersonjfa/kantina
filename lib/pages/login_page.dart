@@ -31,13 +31,14 @@ class _LoginState extends State<Login> {
     final form = frmLoginKey.currentState;
 
     if (form!.validate()) {
-      var u = await userHelper.validateLogin(_email!, _password!);
       form.save();
+
+      var u = await userHelper.validateLogin(_email!, _password!);  
 
       // validando usuário e senha
       if (u != null) {
-        Navigator.pushReplacementNamed(
-            context, '/principal');
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => PrincipalPage(user: u)));
       } else {
         showDialog(
             context: context,
