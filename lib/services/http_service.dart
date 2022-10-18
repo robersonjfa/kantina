@@ -1,26 +1,27 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:http/http.dart';
+import 'package:kantina/models/user.dart';
 
 class HttpService {
   static final String usersURL = "";
   static final String paymentURL = "";
 
-  // Future<List<Post>> getPosts() async {
-  //   Response res = await get(postsURL);
+  static Future<List<User>> getUsers() async {
+    Response res = await get(Uri.parse(usersURL));
 
-  //   if (res.statusCode == 200) {
-  //     List<dynamic> body = jsonDecode(res.body);
+    if (res.statusCode == 200) {
+      List<dynamic> body = jsonDecode(res.body);
+      List<User> users = List.empty();
+      // List<User> users = body
+      //     .map(
+      //       (dynamic item) => User.fromJson(item),
+      //     )
+      //     .toList();
 
-  //     List<Post> posts = body
-  //       .map(
-  //         (dynamic item) => Post.fromJson(item),
-  //       )
-  //       .toList();
-
-  //     return posts;
-  //   } else {
-  //     throw "Unable to retrieve posts.";
-  //   }
-  // }
+      return users;
+    } else {
+      throw "Erro ao recuperar usuários!";
+    }
+  }
 }

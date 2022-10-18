@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io' show Platform;
+import 'dart:io';
 
 import 'package:barcode_scan2/barcode_scan2.dart';
 
@@ -18,6 +18,12 @@ class PrincipalPage extends StatefulWidget {
 
 class _PrincipalPageState extends State<PrincipalPage> {
   ScanResult? scanResult;
+
+  List<String> purchases = [
+    "Compra de créditos no valor de R\$ 20,00 em 10/10/2022",
+    "Compra de pastel no valor de R\$ 4,00 em 12/10/2022",
+    "Compra de mini-pizza no valor de R\$ 6,00 em 12/10/2022",
+  ];
 
   var _aspectTolerance = 0.00;
   var _numberOfCameras = 0;
@@ -46,11 +52,39 @@ class _PrincipalPageState extends State<PrincipalPage> {
       appBar: AppBar(
         title: Text('Home'),
         actions: [
-          IconButton(onPressed: _scan, icon: Icon(Icons.qr_code_scanner_rounded))
+          IconButton(
+              onPressed: _scan, icon: Icon(Icons.qr_code_scanner_rounded))
         ],
       ),
-      body: Center(child: Text("${scanResult?.rawContent}", 
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 26, color: Colors.green),)),
+      body: Column(children: [
+        SizedBox(height: 20),
+        Container(
+          child: Container(
+            height: 250,
+            width: 250,
+            decoration: BoxDecoration(
+                color: Colors.yellow, borderRadius: BorderRadius.circular(100)
+                //more than 50% of width makes circle
+                ),
+            child: Align(
+                alignment: Alignment.center,
+                child: Text(
+                  "R\$ ${scanResult?.rawContent ?? 0}",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 32,
+                      color: Colors.green),
+                )),
+          ),
+        ),
+        SizedBox(height: 20),
+        Flexible(
+            child: ListView.builder(
+                itemCount: purchases.length,
+                itemBuilder: (context, idx) {
+                  return Text(purchases[idx]);
+                }))
+      ]),
       drawer: Drawer(
         // adicionar um widget ListView(lista de itens(ListTile))
         child: ListView(
@@ -85,7 +119,11 @@ class _PrincipalPageState extends State<PrincipalPage> {
               title: Text('Sair'),
               leading: Icon(SimpleLineIcons.close),
               onTap: () {
-                // TODO: Implementar o sair da aplicação
+                if (Platform.isAndroid) {
+                  SystemNavigator.pop();
+                } else if (Platform.isIOS) {
+                  exit(0);
+                }
               },
             ),
           ],
@@ -94,8 +132,7 @@ class _PrincipalPageState extends State<PrincipalPage> {
     );
   }
 
-
-   Future<void> _scan() async {
+  Future<void> _scan() async {
     try {
       final result = await BarcodeScanner.scan(
         options: ScanOptions(
@@ -115,8 +152,8 @@ class _PrincipalPageState extends State<PrincipalPage> {
           type: ResultType.Error,
           format: BarcodeFormat.unknown,
           rawContent: e.code == BarcodeScanner.cameraAccessDenied
-              ? 'The user did not grant the camera permission!'
-              : 'Unknown error: $e',
+              ? 'Problema de permissão para acessar a câmera!'
+              : 'Erro: $e',
         );
       });
     }
