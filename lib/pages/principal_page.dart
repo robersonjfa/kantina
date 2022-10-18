@@ -1,4 +1,10 @@
+import 'dart:async';
+import 'dart:io' show Platform;
+
+import 'package:barcode_scan2/barcode_scan2.dart';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:kantina/models/user.dart';
 
@@ -11,16 +17,40 @@ class PrincipalPage extends StatefulWidget {
 }
 
 class _PrincipalPageState extends State<PrincipalPage> {
+  ScanResult? scanResult;
+
+  var _aspectTolerance = 0.00;
+  var _numberOfCameras = 0;
+  var _selectedCamera = -1;
+  var _useAutoFocus = true;
+  var _autoEnableFlash = false;
+
+  static final _possibleFormats = BarcodeFormat.values.toList()
+    ..removeWhere((e) => e == BarcodeFormat.unknown);
+
+  List<BarcodeFormat> selectedFormats = [..._possibleFormats];
+
+  @override
+  void initState() {
+    super.initState();
+
+    Future.delayed(Duration.zero, () async {
+      _numberOfCameras = await BarcodeScanner.numberOfCameras;
+      setState(() {});
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Home'),
         actions: [
-          IconButton(onPressed: null, icon: Icon(Icons.qr_code_scanner_rounded))
+          IconButton(onPressed: _scan, icon: Icon(Icons.qr_code_scanner_rounded))
         ],
       ),
-      body: Center(child: Text("Tela Principal")),
+      body: Center(child: Text("${scanResult?.rawContent}", 
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 26, color: Colors.green),)),
       drawer: Drawer(
         // adicionar um widget ListView(lista de itens(ListTile))
         child: ListView(
@@ -62,5 +92,33 @@ class _PrincipalPageState extends State<PrincipalPage> {
         ),
       ),
     );
+  }
+
+
+   Future<void> _scan() async {
+    try {
+      final result = await BarcodeScanner.scan(
+        options: ScanOptions(
+          restrictFormat: selectedFormats,
+          useCamera: _selectedCamera,
+          autoEnableFlash: _autoEnableFlash,
+          android: AndroidOptions(
+            aspectTolerance: _aspectTolerance,
+            useAutoFocus: _useAutoFocus,
+          ),
+        ),
+      );
+      setState(() => scanResult = result);
+    } on PlatformException catch (e) {
+      setState(() {
+        scanResult = ScanResult(
+          type: ResultType.Error,
+          format: BarcodeFormat.unknown,
+          rawContent: e.code == BarcodeScanner.cameraAccessDenied
+              ? 'The user did not grant the camera permission!'
+              : 'Unknown error: $e',
+        );
+      });
+    }
   }
 }

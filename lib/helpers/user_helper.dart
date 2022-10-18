@@ -25,6 +25,9 @@ class UserHelper {
     await db.execute(
         "CREATE TABLE user(id INTEGER PRIMARY KEY autoincrement, name TEXT, email TEXT, password TEXT, latitude NUMERIC, longitude NUMERIC, photo TEXT)");
     await db.execute(
+        "CREATE TABLE user_payment(id INTEGER PRIMARY KEY autoincrement, userid INTEGER, description TEXT UNIQUE, value NUMERIC)");
+    
+    await db.execute(
         "insert into user(name, email, password) values('flutter', 'flutter@unoesc.edu.br', 'flutter')");
   }
 
