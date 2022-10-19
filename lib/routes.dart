@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kantina/pages/map_page.dart';
+import 'package:kantina/pages/payment_page.dart';
 import 'package:kantina/pages/principal_page.dart';
 import 'package:kantina/pages/login_page.dart';
 
@@ -11,4 +12,7 @@ final routes = {
     PrincipalPage(),
   '/map': (BuildContext context) => 
     MapPage(),
-};
+  '/payment': (BuildContext context) => 
+    paymentpage(),
+}
+;

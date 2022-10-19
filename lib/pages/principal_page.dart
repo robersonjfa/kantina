@@ -17,7 +17,7 @@ class PrincipalPage extends StatefulWidget {
 }
 
 class _PrincipalPageState extends State<PrincipalPage> {
-  ScanResult? scanResult;
+  double? scanValue;
 
   List<String> purchases = [
     "Compra de créditos no valor de R\$ 20,00 em 10/10/2022",
@@ -69,7 +69,7 @@ class _PrincipalPageState extends State<PrincipalPage> {
             child: Align(
                 alignment: Alignment.center,
                 child: Text(
-                  "R\$ ${scanResult?.rawContent ?? 0}",
+                  "R\$ ${scanValue ?? 0}",
                   style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 32,
@@ -104,7 +104,7 @@ class _PrincipalPageState extends State<PrincipalPage> {
               leading: Icon(Icons.settings),
               trailing: Icon(Icons.arrow_forward),
               onTap: () {
-                Navigator.of(context).pushNamed('/PaymentPage');
+                Navigator.pushNamed(context, '/payment');
               },
             ),
             ListTile(
@@ -145,17 +145,32 @@ class _PrincipalPageState extends State<PrincipalPage> {
           ),
         ),
       );
-      setState(() => scanResult = result);
+      double? value = double.tryParse(result.rawContent.replaceFirst(',', '.'));
+      if (value == null)
+        showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                  title: Text("Erro"),
+                  content: Row(children: [
+                    Icon(Icons.error_rounded),
+                    Text("Valor escaneado inválido!")
+                  ]),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(25))));
+            });
+
+      setState(() => scanValue = value);
     } on PlatformException catch (e) {
-      setState(() {
-        scanResult = ScanResult(
-          type: ResultType.Error,
-          format: BarcodeFormat.unknown,
-          rawContent: e.code == BarcodeScanner.cameraAccessDenied
-              ? 'Problema de permissão para acessar a câmera!'
-              : 'Erro: $e',
-        );
-      });
+      // setState(() {
+      //   scanResult = ScanResult(
+      //     type: ResultType.Error,
+      //     format: BarcodeFormat.unknown,
+      //     rawContent: e.code == BarcodeScanner.cameraAccessDenied
+      //         ? 'Problema de permissão para acessar a câmera!'
+      //         : 'Erro: $e',
+      //   );
+      // });
     }
   }
 }

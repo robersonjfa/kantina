@@ -64,8 +64,8 @@ class _LoginState extends State<Login> {
       style: style,
       onSaved: (value) => _email = value,
       validator: (value) {
-        return value!.length < 15
-            ? "E-mail deve ter no mínimo 20 caracteres!"
+        return value!.length < 10
+            ? "E-mail deve ter no mínimo 10 caracteres!"
             : null;
       },
       decoration: InputDecoration(
