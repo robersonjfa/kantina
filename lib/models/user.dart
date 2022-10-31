@@ -35,4 +35,13 @@ class User {
       'photo': _photo
     };
   }
+
+  factory User.fromMap(Map<String, dynamic> json) {
+    return User(json['id'], json['name'], json['email'], json['password'],
+        json['latitude'], json['longitude'], json['photo']);
+  }
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(json['id'], json['name'], json['email'], json['password'],
+        json['latitude'], json['longitude'], json['photo']);
+  }
 }

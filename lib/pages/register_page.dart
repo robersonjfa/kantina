@@ -45,7 +45,6 @@ class _RegisterPageState extends State<RegisterPage> {
   void _registerUser() async {
     // capturando o estado atual do formulário
     final form = frmRegisterKey.currentState;
-    var userHelper = UserHelper();    
     await userHelper.open(); // é assincrono então precisa do await
 
     var bytes = null;

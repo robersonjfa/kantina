@@ -31,4 +31,13 @@ class UserPayment {
       'value': _value,
     };
   }
+
+  factory UserPayment.fromMap(Map<String, dynamic> json) {
+    return UserPayment(
+        json['id'], json['userid'], json['description'], json['value']);
+  }
+  factory UserPayment.fromJson(Map<String, dynamic> json) {
+    return UserPayment(
+        json['id'], json['userid'], json['description'], json['value']);
+  }
 }
