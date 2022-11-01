@@ -1,12 +1,17 @@
 import 'dart:async';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:barcode_scan2/barcode_scan2.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+import 'package:kantina/helpers/user_helper.dart';
 import 'package:kantina/models/user.dart';
+import 'package:kantina/services/http_service.dart';
+import 'package:kantina/widgets/promotions_listview.dart';
 
 class PrincipalPage extends StatefulWidget {
   final User? user;
@@ -17,13 +22,8 @@ class PrincipalPage extends StatefulWidget {
 }
 
 class _PrincipalPageState extends State<PrincipalPage> {
-  double? scanValue;
-
-  List<String> purchases = [
-    "Compra de créditos no valor de R\$ 20,00 em 10/10/2022",
-    "Compra de pastel no valor de R\$ 4,00 em 12/10/2022",
-    "Compra de mini-pizza no valor de R\$ 6,00 em 12/10/2022",
-  ];
+  var userHelper = UserHelper();
+  double? paymentValue = 0.0;
 
   var _aspectTolerance = 0.00;
   var _numberOfCameras = 0;
@@ -41,8 +41,12 @@ class _PrincipalPageState extends State<PrincipalPage> {
     super.initState();
 
     Future.delayed(Duration.zero, () async {
+      await userHelper.open();
+      double? payValue = await userHelper.sumAvailablePayment();
       _numberOfCameras = await BarcodeScanner.numberOfCameras;
-      setState(() {});
+      setState(() {
+        paymentValue = payValue;
+      });
     });
   }
 
@@ -69,7 +73,7 @@ class _PrincipalPageState extends State<PrincipalPage> {
             child: Align(
                 alignment: Alignment.center,
                 child: Text(
-                  "R\$ ${scanValue ?? 0}",
+                  "R\$ ${paymentValue}",
                   style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 32,
@@ -78,12 +82,7 @@ class _PrincipalPageState extends State<PrincipalPage> {
           ),
         ),
         SizedBox(height: 20),
-        Flexible(
-            child: ListView.builder(
-                itemCount: purchases.length,
-                itemBuilder: (context, idx) {
-                  return Text(purchases[idx]);
-                }))
+        Flexible(child: PromotionsListView())
       ]),
       drawer: Drawer(
         // adicionar um widget ListView(lista de itens(ListTile))
@@ -112,7 +111,41 @@ class _PrincipalPageState extends State<PrincipalPage> {
               leading: Icon(Icons.settings),
               trailing: Icon(Icons.arrow_forward),
               onTap: () {
-                Navigator.of(context).pushNamed('/BackupPage');
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                          title: Text("Backup"),
+                          content: Row(children: [
+                            Icon(Icons.backup_outlined),
+                            Text(
+                                "Deseja realizar o backup dos \ndados no servidor?")
+                          ]),
+                          actions: [
+                            ElevatedButton(
+                                onPressed: () {
+                                  EasyLoading.show(status: 'Sincronizando...');
+                                  Future.delayed(Duration(seconds: 10), () async {
+                                    List<User> users = await userHelper.listUsers();
+                                    users.forEach((u) { 
+                                      print(HttpService.createUser(u));
+                                    });   
+                                    EasyLoading.dismiss();
+                                  });
+
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text('Sim')),
+                            ElevatedButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text('Não')),
+                          ],
+                          shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(25))));
+                    });
               },
             ),
             ListTile(
@@ -146,7 +179,7 @@ class _PrincipalPageState extends State<PrincipalPage> {
         ),
       );
       double? value = double.tryParse(result.rawContent.replaceFirst(',', '.'));
-      if (value == null)
+      if (value == null) {
         showDialog(
             context: context,
             builder: (context) {
@@ -159,18 +192,36 @@ class _PrincipalPageState extends State<PrincipalPage> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.all(Radius.circular(25))));
             });
-
-      setState(() => scanValue = value);
+      } else {
+        showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                  title: Text("Compra"),
+                  content: Row(children: [
+                    Icon(Icons.lunch_dining_outlined),
+                    Text("Tem certeza que deseja realizar \na compra?")
+                  ]),
+                  actions: [
+                    ElevatedButton(
+                        onPressed: () {
+                          setState(
+                              () => paymentValue = (paymentValue! - value));
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text('Confirmar')),
+                    ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text('Cancelar')),
+                  ],
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(25))));
+            });
+      }
     } on PlatformException catch (e) {
-      // setState(() {
-      //   scanResult = ScanResult(
-      //     type: ResultType.Error,
-      //     format: BarcodeFormat.unknown,
-      //     rawContent: e.code == BarcodeScanner.cameraAccessDenied
-      //         ? 'Problema de permissão para acessar a câmera!'
-      //         : 'Erro: $e',
-      //   );
-      // });
+      log("Erro: $e");
     }
   }
 }

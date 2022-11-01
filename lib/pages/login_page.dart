@@ -62,6 +62,7 @@ class _LoginState extends State<Login> {
     // campo usuario
     final emailField = TextFormField(
       style: style,
+      initialValue: "robersonjfa@gmail.com",
       onSaved: (value) => _email = value,
       validator: (value) {
         return value!.length < 10
@@ -80,6 +81,7 @@ class _LoginState extends State<Login> {
 
     final passwordField = TextFormField(
       obscureText: true,
+      initialValue: "123456",
       style: style,
       onSaved: (value) => _password = value,
       validator: (value) {
