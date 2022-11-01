@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:kantina/models/user.dart';
@@ -82,26 +83,32 @@ class UserHelper {
     List<Map> list =
         await dbClient.rawQuery("select sum(value) valuesum from user_payment");
     if (list.length > 0) {
-      value = list[0]["valuesum"];
+      value = double.parse((list[0]["valuesum"]).toString());
     }
 
     return value;
+  }
+
+  Future<void> updatePaymentValue(double value) async {
+    var dbClient = await db;
+    await dbClient
+        .rawUpdate("update user_payment set value = (value - ?)", [value]);
   }
 
   Future<List<User>> listUsers() async {
     var dbClient = await db;
     List<User> users = []; // preenche os dados do usuário
     List<Map> list = await dbClient.rawQuery("select * from user");
-    if (list.length > 0) {
-      users.add(User(
-          list[0]["id"],
-          list[0]["name"],
-          list[0]["email"],
-          list[0]["password"],
-          list[0]["latitude"],
-          list[0]["longitude"],
-          list[0]["photo"]));
-    }
+    list.forEach((u) { 
+         users.add(User(
+          u["id"],
+          u["name"],
+          u["email"],
+          u["password"],
+          u["latitude"],
+          u["longitude"],
+          u["photo"]));
+    });
 
     return users;
   }

@@ -36,6 +36,14 @@ class _PrincipalPageState extends State<PrincipalPage> {
 
   List<BarcodeFormat> selectedFormats = [..._possibleFormats];
 
+  updatePaymentValue(double value) async {
+    await userHelper.updatePaymentValue(value);
+    double? payValue = await userHelper.sumAvailablePayment();
+    setState(() {
+      paymentValue = payValue;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -125,11 +133,14 @@ class _PrincipalPageState extends State<PrincipalPage> {
                             ElevatedButton(
                                 onPressed: () {
                                   EasyLoading.show(status: 'Sincronizando...');
-                                  Future.delayed(Duration(seconds: 10), () async {
-                                    List<User> users = await userHelper.listUsers();
-                                    users.forEach((u) { 
+                                  Future.delayed(Duration(seconds: 10),
+                                      () async {
+                                    List<User> users =
+                                        await userHelper.listUsers();
+                                    users.forEach((u) {
+                                      print(u.email);
                                       print(HttpService.createUser(u));
-                                    });   
+                                    });
                                     EasyLoading.dismiss();
                                   });
 
@@ -205,8 +216,7 @@ class _PrincipalPageState extends State<PrincipalPage> {
                   actions: [
                     ElevatedButton(
                         onPressed: () {
-                          setState(
-                              () => paymentValue = (paymentValue! - value));
+                          updatePaymentValue(value);
                           Navigator.of(context).pop();
                         },
                         child: const Text('Confirmar')),
