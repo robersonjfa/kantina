@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.kantina">
+    package="br.edu.unoesc.pdm.kantina">
    <application
         android:label="Kantina"
         android:name="${applicationName}"
